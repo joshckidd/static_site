@@ -1,4 +1,6 @@
 from enum import Enum
+from htmlnode import *
+from split_nodes import *
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -40,4 +42,44 @@ def block_to_block_type(block):
     return BlockType.ORDERED_LIST
 
 def markdown_to_blocks(markdown):
-    return list(map(lambda x: x.strip(), markdown.split("\n\n")))
+    return list(map(lambda x: x.strip(), markdown.strip().split("\n\n")))
+
+def text_to_children(text):
+    html_nodes = []
+    text_nodes = text_to_textnodes(text)
+    for node in text_nodes:
+        html_nodes.append(text_node_to_html_node(node))
+    return html_nodes
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    children = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.HEADING:
+            splits = block.split(" ", 1)
+            children.append(ParentNode("h"+str(len(splits[0])), text_to_children(splits[1])))
+        if block_type == BlockType.CODE:
+            children.append(ParentNode("pre",[LeafNode("code", block[4:-3])]))
+        if block_type == BlockType.QUOTE:
+            splits = block.split("\n")
+            lines = ""
+            for split in splits:
+                lines += split[2:] + "\n"
+            children.append(ParentNode("blockquote", text_to_children(lines)))
+        if block_type == BlockType.PARAGRAPH:
+            children.append(ParentNode("p", text_to_children(block.replace("\n", " "))))
+        if block_type == BlockType.ORDERED_LIST:
+            splits = block.split("\n")
+            lines = []
+            for split in splits:
+                lines.append(ParentNode("li", text_to_children(split[4:])))
+            children.append(ParentNode("ol", lines))
+        if block_type == BlockType.UNORDERED_LIST:
+            splits = block.split("\n")
+            lines = []
+            for split in splits:
+                lines.append(ParentNode("li", text_to_children(split[3:])))
+            children.append(ParentNode("ul", lines))
+    html = ParentNode("div", children)
+    return html
