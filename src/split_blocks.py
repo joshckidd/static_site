@@ -73,13 +73,20 @@ def markdown_to_html_node(markdown):
             splits = block.split("\n")
             lines = []
             for split in splits:
-                lines.append(ParentNode("li", text_to_children(split[4:])))
+                lines.append(ParentNode("li", text_to_children(split[3:])))
             children.append(ParentNode("ol", lines))
         if block_type == BlockType.UNORDERED_LIST:
             splits = block.split("\n")
             lines = []
             for split in splits:
-                lines.append(ParentNode("li", text_to_children(split[3:])))
+                lines.append(ParentNode("li", text_to_children(split[2:])))
             children.append(ParentNode("ul", lines))
     html = ParentNode("div", children)
     return html
+
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block[0:2] == "# ":
+            return block[2:].strip()
+    raise Exception("No title found.")

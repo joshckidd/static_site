@@ -118,3 +118,73 @@ the **same** even with inline stuff
             html,
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
+
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_extract_title(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+# This is a header
+
+## This is also a header
+
+### This too is a header
+
+#### Still a header
+
+##### Still a header!
+
+###### Still a header!
+
+####### PAragraph!
+
+#Also paragraph
+
+>This is quote
+>By Joshua Kidd
+
+>This is not a quote
+Because not all lines start with >
+
+```
+This is a code block.
+```
+
+1. This is a list
+2. With numbered items
+
+- This is a list
+- with items
+
+-This is not a list
+- There needs to be a space
+
+2. This is also not a list
+3. The numbers aren't in order
+4. It's a paragraph instead
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "This is a header")
+

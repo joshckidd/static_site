@@ -1,4 +1,5 @@
 from textnode import *
+from split_blocks import *
 import os, shutil
 
 def copy_file(path, files):
@@ -14,9 +15,24 @@ def generate_site():
         shutil.rmtree("public/")
     os.mkdir("public/")
     copy_file("", os.listdir("static/"))
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path) as file:
+        markdown = file.read()
+    with open(template_path) as file:
+        template = file.read()
+    content = markdown_to_html_node(markdown).to_html()
+    title = extract_title(markdown)
+    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    if not os.path.isdir(os.path.dirname(dest_path)):
+        os.makedirs(os.path.dirname(dest_path))
+    with open(dest_path, "w") as file:
+        template = file.write(html)
     
 
 def main():
     generate_site()
+    generate_page("content/index.md", "template.html", "public/index.html")
 
 main()
