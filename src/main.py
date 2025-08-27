@@ -1,6 +1,6 @@
 from textnode import *
 from split_blocks import *
-import os, shutil
+import os, shutil, sys
 
 def copy_file(path, files):
     for file in files:
@@ -16,7 +16,7 @@ def generate_site():
     os.mkdir("public/")
     copy_file("", os.listdir("static/"))
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as file:
         markdown = file.read()
@@ -24,22 +24,26 @@ def generate_page(from_path, template_path, dest_path):
         template = file.read()
     content = markdown_to_html_node(markdown).to_html()
     title = extract_title(markdown)
-    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    html = template.replace("{{ Title }}", title).replace("{{ Content }}", content).replace("href=\"/", f"href=\"{basepath}").replace("src=\"/", f"src=\"{basepath}")
     if not os.path.isdir(os.path.dirname(dest_path)):
         os.makedirs(os.path.dirname(dest_path))
     with open(dest_path, "w") as file:
         template = file.write(html)
     
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     files = os.listdir(dir_path_content)
     for file in files:
         if os.path.isfile(os.path.join(dir_path_content, file)):
-            generate_page(os.path.join(dir_path_content, file), template_path, os.path.join(dest_dir_path, file.split(".")[0] + ".html"))
+            generate_page(os.path.join(dir_path_content, file), template_path, os.path.join(dest_dir_path, file.split(".")[0] + ".html"), basepath)
         else:
-            generate_pages_recursive(os.path.join(dir_path_content, file), template_path, os.path.join(dest_dir_path, file))
+            generate_pages_recursive(os.path.join(dir_path_content, file), template_path, os.path.join(dest_dir_path, file), basepath)
 
 def main():
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
     generate_site()
-    generate_pages_recursive("content/", "template.html", "public/")
+    generate_pages_recursive("content/", "template.html", "docs/", basepath)
 
 main()
