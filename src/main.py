@@ -5,15 +5,15 @@ import os, shutil, sys
 def copy_file(path, files):
     for file in files:
         if os.path.isfile(os.path.join("static/", path, file)):
-            shutil.copy(os.path.join("static/", path, file), os.path.join("public/", path, file))
+            shutil.copy(os.path.join("static/", path, file), os.path.join("docs/", path, file))
         else:
-            os.mkdir(os.path.join("public/", path, file))
+            os.mkdir(os.path.join("docs/", path, file))
             copy_file(os.path.join(path, file), os.listdir(os.path.join("static/", path, file)))
 
 def generate_site():
-    if os.path.exists("public/"):
-        shutil.rmtree("public/")
-    os.mkdir("public/")
+    if os.path.exists("docs/"):
+        shutil.rmtree("docs/")
+    os.mkdir("docs/")
     copy_file("", os.listdir("static/"))
 
 def generate_page(from_path, template_path, dest_path, basepath):
